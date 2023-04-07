@@ -1,46 +1,32 @@
 import PropTypes from 'prop-types';
 import { Modal } from 'components/Modal/Modal';
-import { Component } from 'react';
+import { useState } from 'react';
 import sass from './ImageGalleryList.module.scss';
 
-export class ImageGalleryList extends Component {
-  state = {
-    isModalOpen: false,
+export const ImageGalleryList = ({ webformatURL, largeImageURL, tags }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const toggleModal = () => {
+    setIsModalOpen(prevState => !prevState);
   };
 
-  toggleModal = () => {
-    this.setState(prevState => ({
-      isModalOpen: !prevState.isModalOpen,
-    }));
-  };
+  return (
+    <li className={sass.galleryItem}>
+      <img
+        src={webformatURL}
+        alt={tags}
+        width="500"
+        height="210"
+        loading="lazy"
+        onClick={toggleModal}
+      />
 
-  render() {
-    const { webformatURL, largeImageURL, tags } = this.props;
-    const { isModalOpen } = this.state;
-    const { toggleModal } = this;
-
-    return (
-      <li className={sass.galleryItem}>
-        <img
-          src={webformatURL}
-          alt={tags}
-          width="500"
-          height="210"
-          loading="lazy"
-          onClick={toggleModal}
-        />
-
-        {isModalOpen && (
-          <Modal
-            modalImg={largeImageURL}
-            tags={tags}
-            closeModal={toggleModal}
-          />
-        )}
-      </li>
-    );
-  }
-}
+      {isModalOpen && (
+        <Modal modalImg={largeImageURL} tags={tags} closeModal={toggleModal} />
+      )}
+    </li>
+  );
+};
 
 ImageGalleryList.propTypes = {
   webformatURL: PropTypes.string.isRequired,

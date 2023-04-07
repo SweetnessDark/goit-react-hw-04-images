@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.module.scss';
 
 import { ToastContainer } from 'react-toastify';
@@ -11,64 +11,64 @@ import { Loader } from './Loader/Loader';
 import { Searchbar } from './Searchbar/Searchbar';
 import { Button } from './Button/Button';
 
-export class App extends Component {
-  state = {
-    value: '',
-    image: [],
-    page: 1,
-    totalHits: 0,
-    isLoading: false,
-  };
+export const App = () => {
+  const [value, setValue] = useState('');
+  const [image, setImage] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalHits, setTotalHits] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
-  async componentDidUpdate(_, prevState) {
-    const { value, page } = this.state;
-    if (prevState.value !== value || prevState.page !== page) {
-      try {
-        this.setState({ isLoading: true });
-        const { totalHits, hits } = await getImages(value, page);
-
-        if (totalHits === 0) {
-          toast.error('Nothing was found for your request');
-          this.setState({ isLoading: false });
-          return;
-        }
-
-        this.setState(prevState => ({
-          image: page === 1 ? hits : [...prevState.image, ...hits],
-
-          totalHits:
-            page === 1
-              ? totalHits - hits.length
-              : totalHits - [...prevState.image, ...hits].length,
-        }));
-
-        this.setState({ isLoading: false });
-      } catch (error) {
-        toast.error(`Oops! Something went wrong! ${error}`);
-      }
+  useEffect(() => {
+    if (!value) {
+      return;
     }
-  }
 
-  handleSubmit = value => {
-    this.setState({ value, page: 1 });
+    setIsLoading(true);
+
+    const fetchData = async () => {
+      const { totalHits, hits } = await getImages(value, page);
+
+      if (totalHits === 0) {
+        toast.error('Nothing was found for your request');
+        setIsLoading(false);
+        return;
+      }
+
+      setImage(prevImage =>
+        page === 1 ? hits : [...prevImage.image, ...hits]
+      );
+
+      setTotalHits(prevPage =>
+        page === 1
+          ? totalHits - hits.length
+          : totalHits - [...prevPage.image, ...hits].length
+      );
+
+      setIsLoading(false);
+    };
+
+    fetchData().catch(error => {
+      toast.error(`Oops! Something went wrong! ${error}`);
+      setIsLoading(false);
+    });
+  }, [value, page]);
+
+  const handleSubmit = value => {
+    setValue(value);
+    setPage(1);
   };
 
-  handleLoadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
+  const handleLoadMore = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  render() {
-    const { image, totalHits, isLoading } = this.state;
-    const { handleSubmit, handleLoadMore } = this;
-
-    return (
-      <>
-        <Searchbar onSubmit={handleSubmit} />
-        {image && <ImageGallery image={image} />}
-        {!!totalHits && <Button onLoadMore={handleLoadMore} />}
-        {isLoading && <Loader />}
-        <ToastContainer autoClose={2000} />
-      </>
-    );
-  }
-}
+  return (
+    <>
+      <Searchbar onSubmit={handleSubmit} />
+      {image && <ImageGallery image={image} />}
+      {!!totalHits && <Button onLoadMore={handleLoadMore} />}
+      {isLoading && <Loader />}
+      <ToastContainer autoClose={2000} />
+    </>
+  );
+};

@@ -1,38 +1,35 @@
 import PropTypes from 'prop-types';
-import { Component } from 'react';
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import sass from './Modal.module.scss';
 
 const modalRoot = document.getElementById('modal-root');
 
-export class Modal extends Component {
-  componentDidMount() {
-    window.addEventListener('keydown', this.closeByEsc);
-  }
+export const Modal = ({ closeModal, modalImg, tags }) => {
+  useEffect(() => {
+    const closeByEsc = e => {
+      if (e.code !== 'Escape') {
+        return;
+      }
+      closeModal();
+    };
 
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.closeByEsc);
-  }
+    window.addEventListener('keydown', closeByEsc);
 
-  closeByEsc = e => {
-    if (e.code !== 'Escape') {
-      return;
-    }
-    this.props.closeModal();
-  };
+    return () => {
+      window.removeEventListener('keydown', closeByEsc);
+    };
+  }, [closeModal]);
 
-  render() {
-    const { closeModal, tags, modalImg } = this.props;
-    return createPortal(
-      <div className={sass.overlay} onClick={closeModal}>
-        <div className={sass.modal}>
-          <img className={sass.modalImage} src={modalImg} alt={tags} />
-        </div>
-      </div>,
-      modalRoot
-    );
-  }
-}
+  return createPortal(
+    <div className={sass.overlay} onClick={closeModal}>
+      <div className={sass.modal}>
+        <img className={sass.modalImage} src={modalImg} alt={tags} />
+      </div>
+    </div>,
+    modalRoot
+  );
+};
 
 Modal.propTypes = {
   modalImg: PropTypes.string.isRequired,
