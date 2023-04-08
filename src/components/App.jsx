@@ -34,14 +34,10 @@ export const App = () => {
         return;
       }
 
-      setImage(prevImage =>
-        page === 1 ? hits : [...prevImage.image, ...hits]
-      );
+      setImage(prevImage => (page === 1 ? hits : [...prevImage, ...hits]));
 
       setTotalHits(prevPage =>
-        page === 1
-          ? totalHits - hits.length
-          : totalHits - [...prevPage.image, ...hits].length
+        page === 1 ? totalHits - hits.length : prevPage - hits.length
       );
 
       setIsLoading(false);
